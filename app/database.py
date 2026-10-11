@@ -18,8 +18,8 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 
+
 def create_db_tables():
-    # Import the model so SQLAlchemy knows which tables to create.
-    from app.models.db_models import StudentDB
+    from app.models.db_models import StudentDB, OpportunityDB
 
     Base.metadata.create_all(bind=engine)

@@ -9,6 +9,15 @@ from app.database import SessionLocal, create_db_tables
 from app.models.student import StudentProfile
 from app.services.student_service import create_student, get_student
 
+from sqlalchemy import select
+from app.models.opportunity import Opportunity
+from app.models.db_models import OpportunityDB
+from app.services.opportunity_service import (
+    create_opportunity,
+    get_opportunities,
+    get_opportunity,
+)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -73,4 +82,56 @@ def read_student(
             detail="Student not found.",
         )
 
+
     return student
+
+
+@app.post(
+    "/opportunities",
+    response_model=Opportunity,
+    status_code=201,
+)
+def add_opportunity(
+    opportunity: Opportunity,
+    db: Session = Depends(get_db),
+):
+    try:
+        return create_opportunity(db, opportunity)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="An opportunity with this source URL already exists.",
+        )
+
+
+@app.get(
+    "/opportunities",
+    response_model=list[Opportunity],
+)
+def list_opportunities(
+    category: str | None = None,
+    location: str | None = None,
+    db: Session = Depends(get_db),
+):
+    return get_opportunities(db, category, location)
+
+
+@app.get(
+    "/opportunities/{opportunity_id}",
+    response_model=Opportunity,
+)
+def read_opportunity(
+    opportunity_id: int,
+    db: Session = Depends(get_db),
+):
+    opportunity = get_opportunity(db, opportunity_id)
+
+    if opportunity is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Opportunity not found.",
+        )
+
+    return opportunity
+
