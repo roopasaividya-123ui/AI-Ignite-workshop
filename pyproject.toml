@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+# Allow `pytest` to be run from the project root without setting PYTHONPATH manually.
+pythonpath = ["."]
+testpaths = ["tests"]
+

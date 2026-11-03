@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TruthGuard AI – Advanced Fake News Detection & Awareness Platform</title>
+  <meta name="description" content="AI-powered fact verification platform evaluating online news, viral WhatsApp claims, and headlines against authoritative registries.">
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: ['class', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            },
+            truth: {
+              green: '#10b981',
+              orange: '#f59e0b',
+              red: '#ef4444',
+              slate: '#64748b',
+              purple: '#8b5cf6',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-blue-500 selection:text-white">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Main Application Wrapper -->
+  <div class="flex flex-1 min-h-screen">
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="w-64 glass-panel border-r border-slate-800 flex flex-col justify-between hidden md:flex transition-all duration-300 z-30">
+      <div>
+        <!-- Logo & Brand Header -->
+        <div class="p-5 flex items-center justify-between border-b border-slate-800/80">
+          <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('landing')">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+            <div>
+              <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">TruthGuard</span>
+              <span class="text-[10px] block font-mono font-semibold tracking-wider text-blue-400 uppercase">AI Verification</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="p-4 space-y-1">
+          <button onclick="navigateTo('landing')" id="nav-landing" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span>Home</span>
+          </button>
+          
+          <button onclick="navigateTo('analyzer')" id="nav-analyzer" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-white bg-blue-600/20 text-blue-400 border border-blue-500/30 transition-all">
+            <div class="flex items-center space-x-3">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <span class="font-semibold">AI News Analyzer</span>
+            </div>
+            <span class="px-1.5 py-0.5 text-[10px] font-mono bg-blue-500/20 text-blue-300 rounded font-semibold">Core</span>
+          </button>
+
+          <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <span>Live Dashboard</span>
+          </button>
+
+          <button onclick="navigateTo('sources')" id="nav-sources" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            <span>Trusted Sources</span>
+          </button>
+
+          <button onclick="navigateTo('awareness')" id="nav-awareness" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors">
+            <div class="flex items-center space-x-3">
+              <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              <span>Awareness Center</span>
+            </div>
+            <span class="px-1.5 py-0.5 text-[10px] font-mono bg-purple-500/20 text-purple-300 rounded font-semibold">Quiz</span>
+          </button>
+
+          <button onclick="navigateTo('history')" id="nav-history" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Analysis History</span>
+          </button>
+
+          <div id="admin-nav-item" class="pt-2 border-t border-slate-800/80 hidden">
+            <button onclick="navigateTo('admin')" id="nav-admin" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-amber-300 hover:bg-amber-500/10 transition-colors">
+              <div class="flex items-center space-x-3">
+                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <span class="font-semibold">Admin Panel</span>
+              </div>
+              <span class="px-1.5 py-0.5 text-[10px] font-mono bg-amber-500/20 text-amber-300 rounded font-semibold">RBAC</span>
+            </button>
+          </div>
+        </nav>
+      </div>
+
+      <!-- User Profile & Quick Demo Account Controls -->
+      <div class="p-4 border-t border-slate-800/80 space-y-3">
+        <!-- User Status Badge -->
+        <div id="user-profile-badge" class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+          <div class="flex items-center space-x-2.5">
+            <div id="user-avatar" class="w-8 h-8 rounded-full bg-blue-600/30 text-blue-400 font-bold flex items-center justify-center text-xs border border-blue-500/30">
+              G
+            </div>
+            <div>
+              <p id="user-display-name" class="text-xs font-semibold text-slate-200">Public Guest</p>
+              <p id="user-role-label" class="text-[10px] font-mono text-slate-400">Anonymous Mode</p>
+            </div>
+          </div>
+          <button id="auth-action-btn" onclick="openAuthModal()" class="text-xs text-blue-400 hover:text-blue-300 font-medium">
+            Sign In
+          </button>
+        </div>
+
+        <!-- 1-Click Role Switcher for Evaluators -->
+        <div class="text-[11px] text-slate-400">
+          <span class="block mb-1 text-[10px] font-mono uppercase text-slate-400">Instant Demo Login:</span>
+          <div class="grid grid-cols-3 gap-1">
+            <button onclick="demoSignIn('admin')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded text-[10px] font-medium border border-amber-500/20 text-center">Admin</button>
+            <button onclick="demoSignIn('analyst')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-300 rounded text-[10px] font-medium border border-blue-500/20 text-center">Analyst</button>
+            <button onclick="demoSignIn('user')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-300 rounded text-[10px] font-medium border border-emerald-500/20 text-center">Citizen</button>
+          </div>
+        </div>
+
+        <!-- Theme Toggle -->
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-xs text-slate-400">Theme</span>
+          <button onclick="toggleTheme()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">
+            <svg id="theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed top-0 left-0 right-0 h-14 glass-nav px-4 flex items-center justify-between z-40">
+      <div class="flex items-center space-x-2" onclick="navigateTo('landing')">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <span class="font-bold text-base bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">TruthGuard AI</span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="toggleTheme()" class="p-2 rounded bg-slate-800 text-slate-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </button>
+        <button onclick="toggleMobileMenu()" class="p-2 rounded bg-slate-800 text-slate-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 md:pt-0 pt-14 overflow-y-auto">
+
+      <!-- ============================================================== -->
+      <!-- VIEW 1: LANDING PAGE -->
+      <!-- ============================================================== -->
+      <section id="view-landing" class="view-panel min-h-full">
+        <!-- Hero Section -->
+        <div class="relative overflow-hidden pt-12 pb-20 px-6 max-w-6xl mx-auto">
+          <!-- Background Glow Effect -->
+          <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-tr from-blue-600/20 via-purple-600/20 to-transparent blur-3xl pointer-events-none -z-10"></div>
+
+          <!-- Trust Badge Pill -->
+          <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-medium mb-6">
+            <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+            <span>Live Fact-Checking Engine • IFCN Standards</span>
+          </div>
+
+          <!-- Hero Heading -->
+          <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight max-w-4xl leading-[1.15] mb-6">
+            Think Before You Believe.<br>
+            <span class="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+              Verify Before You Share.
+            </span>
+          </h1>
+
+          <p class="text-lg md:text-xl text-slate-300 max-w-2xl leading-relaxed mb-8">
+            TruthGuard AI cross-examines news articles, viral WhatsApp forwards, and headlines against sovereign government registries, WHO advisories, and certified fact-checking archives.
+          </p>
+
+          <!-- CTAs -->
+          <div class="flex flex-wrap gap-4 mb-14">
+            <button onclick="navigateTo('analyzer')" class="px-7 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-blue-500/25 flex items-center space-x-2 transition-all transform hover:-translate-y-0.5">
+              <span>Analyze News Now</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+            <button onclick="scrollToSection('how-it-works')" class="px-6 py-3.5 rounded-xl glass-panel hover:bg-slate-800/80 text-slate-200 font-medium transition-all">
+              Explore How It Works
+            </button>
+          </div>
+
+          <!-- Live Database Platform Statistics -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 glass-panel p-6 rounded-2xl border border-slate-800">
+            <div>
+              <p class="text-xs font-mono text-slate-400 uppercase tracking-wider">Total Analyses</p>
+              <h3 id="landing-stat-total" class="text-2xl md:text-3xl font-extrabold text-white mt-1">--</h3>
+              <p class="text-[11px] text-blue-400 mt-0.5">Live database records</p>
+            </div>
+            <div>
+              <p class="text-xs font-mono text-slate-400 uppercase tracking-wider">Verified Accurate</p>
+              <h3 id="landing-stat-verified" class="text-2xl md:text-3xl font-extrabold text-emerald-400 mt-1">--</h3>
+              <p class="text-[11px] text-emerald-400/80 mt-0.5">Evidence substantiated</p>
+            </div>
+            <div>
+              <p class="text-xs font-mono text-slate-400 uppercase tracking-wider">Debunked / Misleading</p>
+              <h3 id="landing-stat-debunked" class="text-2xl md:text-3xl font-extrabold text-amber-400 mt-1">--</h3>
+              <p class="text-[11px] text-amber-400/80 mt-0.5">Flagged misinformation</p>
+            </div>
+            <div>
+              <p class="text-xs font-mono text-slate-400 uppercase tracking-wider">Trusted Sources</p>
+              <h3 id="landing-stat-sources" class="text-2xl md:text-3xl font-extrabold text-purple-400 mt-1">--</h3>
+              <p class="text-[11px] text-purple-400/80 mt-0.5">PIB, WHO, AltNews, etc.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- How It Works Section -->
+        <div id="how-it-works" class="py-16 px-6 max-w-6xl mx-auto border-t border-slate-800/80">
+          <div class="text-center max-w-2xl mx-auto mb-12">
+            <span class="text-xs font-mono text-blue-400 font-semibold uppercase tracking-wider">Verification Architecture</span>
+            <h2 class="text-3xl font-bold tracking-tight text-white mt-2">How TruthGuard AI Analyzes Claims</h2>
+            <p class="text-slate-400 text-sm mt-2">Every submission flows through our non-hallucinating 8-stage verification pipeline.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="glass-panel p-5 rounded-xl border border-slate-800">
+              <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 font-mono font-bold flex items-center justify-center text-sm mb-3">1</div>
+              <h4 class="font-semibold text-white text-base">Content Extraction</h4>
+              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Scrapes article metadata, parses uploaded documents, and sanitizes forwarded viral messages.</p>
+            </div>
+            <div class="glass-panel p-5 rounded-xl border border-slate-800">
+              <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 font-mono font-bold flex items-center justify-center text-sm mb-3">2</div>
+              <h4 class="font-semibold text-white text-base">Claim Decomposition</h4>
+              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Isolates atomic factual statements, numerical figures, and named policies to test independently.</p>
+            </div>
+            <div class="glass-panel p-5 rounded-xl border border-slate-800">
+              <div class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 font-mono font-bold flex items-center justify-center text-sm mb-3">3</div>
+              <h4 class="font-semibold text-white text-base">Evidence Retrieval</h4>
+              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Corroborates claims against official .gov.in gazettes, WHO advisories, and IFCN fact checks.</p>
+            </div>
+            <div class="glass-panel p-5 rounded-xl border border-slate-800">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-mono font-bold flex items-center justify-center text-sm mb-3">4</div>
+              <h4 class="font-semibold text-white text-base">Reasoned Assessment</h4>
+              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Synthesizes evidence-backed verdicts. If evidence is unavailable, abstains rather than guessing.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trusted Source Ecosystem -->
+        <div class="py-16 px-6 max-w-6xl mx-auto border-t border-slate-800/80">
+          <div class="flex flex-col md:flex-row md:items-end justify-between mb-8">
+            <div>
+              <span class="text-xs font-mono text-emerald-400 font-semibold uppercase tracking-wider">Independent Corroboration</span>
+              <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-white mt-1">Authoritative Source Network</h2>
+              <p class="text-slate-400 text-sm mt-1">TruthGuard prioritizes sovereign government portals and certified fact-checkers.</p>
+            </div>
+            <button onclick="navigateTo('sources')" class="mt-4 md:mt-0 text-sm text-blue-400 hover:text-blue-300 flex items-center space-x-1 font-medium">
+              <span>View Source Directory</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="glass-panel p-4 rounded-xl flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs">PIB</div>
+              <div>
+                <h5 class="text-sm font-semibold text-white">PIB Fact Check</h5>
+                <p class="text-[11px] text-slate-400">Govt of India • Sovereign</p>
+              </div>
+            </div>
+            <div class="glass-panel p-4 rounded-xl flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-xs">ALT</div>
+              <div>
+                <h5 class="text-sm font-semibold text-white">Alt News</h5>
+                <p class="text-[11px] text-slate-400">IFCN Certified • India</p>
+              </div>
+            </div>
+            <div class="glass-panel p-4 rounded-xl flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-xs">BOOM</div>
+              <div>
+                <h5 class="text-sm font-semibold text-white">BOOM Live</h5>
+                <p class="text-[11px] text-slate-400">IFCN Certified • Digital</p>
+              </div>
+            </div>
+            <div class="glass-panel p-4 rounded-xl flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold text-xs">WHO</div>
+              <div>
+                <h5 class="text-sm font-semibold text-white">WHO Public Health</h5>
+                <p class="text-[11px] text-slate-400">United Nations Body</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="py-16 px-6 max-w-4xl mx-auto border-t border-slate-800/80">
+          <h2 class="text-2xl font-bold tracking-tight text-white text-center mb-8">Frequently Asked Questions</h2>
+          <div class="space-y-3">
+            <details class="glass-panel p-4 rounded-xl cursor-pointer">
+              <summary class="font-semibold text-sm text-slate-200">How does TruthGuard avoid AI hallucinations?</summary>
+              <p class="text-xs text-slate-400 mt-2 leading-relaxed">Unlike conversational chatbots that generate text from ungrounded training data, TruthGuard uses Retrieval-Augmented Generation (RAG) coupled with a strict abstention mechanism. If no indexed fact-check or official record exists for a claim, TruthGuard returns "Unverified / Insufficient Evidence" rather than guessing.</p>
+            </details>
+            <details class="glass-panel p-4 rounded-xl cursor-pointer">
+              <summary class="font-semibold text-sm text-slate-200">What does the credibility score represent?</summary>
+              <p class="text-xs text-slate-400 mt-2 leading-relaxed">The credibility score (0–100) is an evidence-based assessment indicator derived from supporting versus contradicting authoritative evidence, source transparency, and linguistic manipulation patterns. It is not a mathematically absolute probability that a claim is true.</p>
+            </details>
+            <details class="glass-panel p-4 rounded-xl cursor-pointer">
+              <summary class="font-semibold text-sm text-slate-200">Can I analyze viral WhatsApp and social media forwards?</summary>
+              <p class="text-xs text-slate-400 mt-2 leading-relaxed">Yes! Simply switch to the "Text / Headline" tab in the analyzer and paste the viral message. TruthGuard automatically sanitizes forwarding headers, extracts atomic claims, and scans for phishing or scam domains.</p>
+            </details>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="py-8 px-6 border-t border-slate-800 text-center text-xs text-slate-400">
+          <p>TruthGuard AI – Advanced Fake News Awareness & Source Verification Platform.</p>
+          <p class="mt-1">Dedicated to media literacy, open evidence verification, and digital hygiene.</p>
+        </footer>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 2: AI NEWS ANALYZER (CORE) -->
+      <!-- ============================================================== -->
+      <section id="view-analyzer" class="view-panel hidden p-6 max-w-5xl mx-auto w-full">
+        <div class="mb-6">
+          <div class="flex items-center space-x-2 text-blue-400 text-xs font-mono font-semibold uppercase">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span>Verification Engine</span>
+          </div>
+          <h2 class="text-3xl font-extrabold tracking-tight text-white mt-1">AI News & Claim Analyzer</h2>
+          <p class="text-slate-400 text-sm mt-1">Submit a news URL, headline, viral message, or document for evidence-backed verification.</p>
+        </div>
+
+        <!-- 1-Click Demo Scenarios (Prompt requirement) -->
+        <div class="mb-6 p-4 glass-panel rounded-xl border border-slate-800">
+          <div class="flex items-center justify-between mb-2.5">
+            <span class="text-xs font-semibold text-slate-300">Quick Test Scenarios (1-Click Pre-fills):</span>
+            <span class="text-[10px] font-mono text-blue-400">Click to populate</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            <button onclick="loadDemoScenario('ex-phishing')" class="text-left p-2.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-red-500/20 hover:border-red-500/40 transition-all">
+              <span class="text-[10px] font-mono text-red-400 font-semibold block uppercase">Phishing Scam</span>
+              <span class="text-xs font-medium text-slate-200 line-clamp-1">PM Free Laptop Yojana 2026</span>
+            </button>
+            <button onclick="loadDemoScenario('ex-verified-isro')" class="text-left p-2.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-emerald-500/20 hover:border-emerald-500/40 transition-all">
+              <span class="text-[10px] font-mono text-emerald-400 font-semibold block uppercase">Verified Science</span>
+              <span class="text-xs font-medium text-slate-200 line-clamp-1">ISRO Satellite INSAT-3DS</span>
+            </button>
+            <button onclick="loadDemoScenario('ex-misleading-health')" class="text-left p-2.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-amber-500/20 hover:border-amber-500/40 transition-all">
+              <span class="text-[10px] font-mono text-amber-400 font-semibold block uppercase">Health Myth</span>
+              <span class="text-xs font-medium text-slate-200 line-clamp-1">Raw Garlic 48-Hour Cure</span>
+            </button>
+            <button onclick="loadDemoScenario('ex-unverified-rumor')" class="text-left p-2.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-500/20 hover:border-slate-500/40 transition-all">
+              <span class="text-[10px] font-mono text-slate-400 font-semibold block uppercase">Abstention Demo</span>
+              <span class="text-xs font-medium text-slate-200 line-clamp-1">Subterranean Metro Line</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Analyzer Input Container -->
+        <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-5">
+          <!-- Input Tabs (URL, Text, Document) -->
+          <div class="flex border-b border-slate-800 space-x-6">
+            <button onclick="switchInputTab('text')" id="tab-btn-text" class="tab-btn pb-3 text-sm font-semibold text-blue-400 border-b-2 border-blue-500 flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <span>Text or Headline</span>
+            </button>
+            <button onclick="switchInputTab('url')" id="tab-btn-url" class="tab-btn pb-3 text-sm font-medium text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+              <span>News Article URL</span>
+            </button>
+            <button onclick="switchInputTab('document')" id="tab-btn-document" class="tab-btn pb-3 text-sm font-medium text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              <span>Upload Document</span>
+            </button>
+          </div>
+
+          <!-- Tab Content: Text / Headline -->
+          <div id="input-container-text" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Optional Headline / Story Title</label>
+              <input type="text" id="input-text-title" placeholder="e.g. Government Announces New National Student Subsidy Scheme" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">News Content, Social Post, or Forwarded Message *</label>
+              <textarea id="input-text-content" rows="6" placeholder="Paste full article text, social media post, or WhatsApp forward here. TruthGuard AI will decompose claims and check evidence..." class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-sans"></textarea>
+            </div>
+          </div>
+
+          <!-- Tab Content: URL -->
+          <div id="input-container-url" class="space-y-4 hidden">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Article Web Address (URL) *</label>
+              <div class="relative">
+                <input type="url" id="input-url" placeholder="https://example-news.com/article/breaking-announcement" class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono">
+                <svg class="w-5 h-5 text-slate-500 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1.5">TruthGuard will automatically fetch the web content, inspect author bylines, and assess publisher domain reputation.</p>
+            </div>
+          </div>
+
+          <!-- Tab Content: Document Upload -->
+          <div id="input-container-document" class="space-y-4 hidden">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Select Document (.txt, .md, .json)</label>
+              <div class="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-8 text-center cursor-pointer bg-slate-900/40 transition-colors" onclick="document.getElementById('file-upload-input').click()">
+                <svg class="w-10 h-10 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                <p class="text-sm font-semibold text-slate-200">Click to upload or drag and drop</p>
+                <p class="text-xs text-slate-400 mt-1">Plain text documents, transcripts, press releases</p>
+                <input type="file" id="file-upload-input" accept=".txt,.md,.json,.csv" class="hidden" onchange="handleFileUpload(event)">
+              </div>
+              <div id="uploaded-file-meta" class="mt-2 text-xs text-blue-400 font-mono hidden"></div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Extracted Document Preview</label>
+              <textarea id="input-document-content" rows="4" placeholder="Document text preview will appear here..." class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-300 font-mono" readonly></textarea>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center justify-between pt-2">
+            <button onclick="clearAnalyzerForm()" class="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors">
+              Clear Input
+            </button>
+            <button id="run-analyze-btn" onclick="executeAnalysis()" class="px-7 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-blue-500/25 flex items-center space-x-2 transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>Execute AI Analysis</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Real-Time Pipeline Progress Indicator (Animated During Processing) -->
+        <div id="pipeline-progress-container" class="mt-6 glass-panel p-6 rounded-2xl border border-blue-500/30 hidden">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-3 h-3 rounded-full bg-blue-500 animate-ping"></div>
+              <h4 class="font-bold text-sm text-white">TruthGuard Verification Pipeline Running...</h4>
+            </div>
+            <span id="pipeline-status-text" class="text-xs font-mono text-blue-400">Step 1 of 8</span>
+          </div>
+
+          <div class="space-y-2.5">
+            <div id="step-item-1" class="pipeline-step-item flex items-center space-x-3 text-xs text-slate-400">
+              <span class="step-num w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-mono">1</span>
+              <span>Content extraction & normalization</span>
+            </div>
+            <div id="step-item-2" class="pipeline-step-item flex items-center space-x-3 text-xs text-slate-400">
+              <span class="step-num w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-mono">2</span>
+              <span>Isolating testable factual claims</span>
+            </div>
+            <div id="step-item-3" class="pipeline-step-item flex items-center space-x-3 text-xs text-slate-400">
+              <span class="step-num w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-mono">3</span>
+              <span>Query generation for authoritative registries</span>
+            </div>
+            <div id="step-item-4" class="pipeline-step-item flex items-center space-x-3 text-xs text-slate-400">
+              <span class="step-num w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-mono">4</span>
+              <span>Retrieving evidence from PIB, WHO & IFCN fact checks</span>
+            </div>
+            <div id="step-item-5" class="pipeline-step-item flex items-center space-x-3 text-xs text-slate-400">
+              <span class="step-num w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-mono">5</span>
+              <span>Ranking supporting vs contradicting evidence</span>
+            </div>
+            <div id="step-item-6" class="pipeline-step-item flex items-center space-x-3 text-xs text-slate-400">
+              <span class="step-num w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-mono">6</span>
+              <span>Calculating credibility score with abstention logic</span>
+            </div>
+            <div id="step-item-7" class="pipeline-step-item flex items-center space-x-3 text-xs text-slate-400">
+              <span class="step-num w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-mono">7</span>
+              <span>Synthesizing dual-mode natural-language explanations</span>
+            </div>
+            <div id="step-item-8" class="pipeline-step-item flex items-center space-x-3 text-xs text-slate-400">
+              <span class="step-num w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-mono">8</span>
+              <span>Generating comprehensive report</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 3: NEWS CREDIBILITY REPORT (DETAILED) -->
+      <!-- ============================================================== -->
+      <section id="view-report" class="view-panel hidden p-6 max-w-5xl mx-auto w-full">
+        <!-- Report Header Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <button onclick="navigateTo('analyzer')" class="text-xs text-slate-400 hover:text-slate-200 flex items-center space-x-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                <span>Back to Analyzer</span>
+              </button>
+              <span class="text-slate-600">•</span>
+              <span id="report-share-tag" class="text-[11px] font-mono text-blue-400">ID: #---</span>
+            </div>
+            <h2 id="report-header-title" class="text-2xl font-bold tracking-tight text-white mt-1.5 leading-snug">Report Title</h2>
+          </div>
+
+          <!-- Report Actions -->
+          <div class="flex items-center space-x-2 no-print">
+            <button id="report-save-btn" onclick="toggleSaveCurrentReport()" class="px-3.5 py-2 rounded-lg glass-panel hover:bg-slate-800 text-xs font-semibold text-slate-300 flex items-center space-x-1.5 transition-colors">
+              <svg id="save-star-icon" class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+              <span id="save-btn-label">Save Report</span>
+            </button>
+            <button onclick="openShareModal()" class="px-3.5 py-2 rounded-lg glass-panel hover:bg-slate-800 text-xs font-semibold text-blue-400 flex items-center space-x-1.5 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+              <span>Share</span>
+            </button>
+            <button onclick="window.print()" class="px-3.5 py-2 rounded-lg glass-panel hover:bg-slate-800 text-xs font-semibold text-slate-300 flex items-center space-x-1.5 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              <span>Print / PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Credibility Score Gauge & Verdict Hero Card -->
+        <div class="mt-6 glass-panel p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+          <!-- Circular Animated Score Gauge -->
+          <div class="flex flex-col items-center text-center justify-center">
+            <div class="relative w-36 h-36 flex items-center justify-center">
+              <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#1e293b" stroke-width="10" />
+                <circle id="report-gauge-circle" cx="50" cy="50" r="42" fill="none" stroke="#3b82f6" stroke-width="10" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="60" class="transition-all duration-1000 ease-out" />
+              </svg>
+              <div class="absolute flex flex-col items-center">
+                <span id="report-score-number" class="text-3xl font-extrabold text-white">--</span>
+                <span class="text-[10px] font-mono text-slate-400 uppercase">Score / 100</span>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 mt-2 font-mono">Evidence-Based Rating</p>
+          </div>
+
+          <!-- Verdict & Confidence Summary -->
+          <div class="md:col-span-2 space-y-3">
+            <div class="flex items-center space-x-2">
+              <span id="report-verdict-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
+                Verifying...
+              </span>
+              <span id="report-confidence-label" class="text-xs font-mono text-slate-400">Confidence: --%</span>
+            </div>
+
+            <p id="report-verdict-description" class="text-sm text-slate-300 leading-relaxed">
+              Assessment description will be displayed here based on evidence matching.
+            </p>
+
+            <!-- Metadata Pills -->
+            <div class="flex flex-wrap gap-2 text-xs pt-2">
+              <span id="meta-domain-pill" class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-mono">Domain: --</span>
+              <span id="meta-author-pill" class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-400">Author: --</span>
+              <span id="meta-date-pill" class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-400">Date: --</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mandatory Disclaimer (Prompt Requirement) -->
+        <div class="mt-4 p-3 rounded-xl bg-blue-950/30 border border-blue-500/20 text-[11px] text-blue-300 flex items-start space-x-2">
+          <svg class="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span><strong>Important Notice:</strong> The credibility score is an evidence-based assessment indicator derived from indexed records, not a mathematically proven probability that an article is true.</span>
+        </div>
+
+        <!-- Warning Flags (If Any) -->
+        <div id="report-warnings-container" class="mt-4 space-y-2 hidden"></div>
+
+        <!-- Dual-Mode AI Explanation Section -->
+        <div class="mt-6 glass-panel p-6 rounded-2xl border border-slate-800">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
+            <div>
+              <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                <span>AI Reasoned Explanation Engine</span>
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">Transparent, natural-language rationale justifying this assessment.</p>
+            </div>
+
+            <!-- Beginner vs Standard Mode Toggle (Prompt Requirement) -->
+            <div class="flex items-center space-x-1 p-1 bg-slate-900 rounded-xl border border-slate-800">
+              <button onclick="switchExplanationMode('standard')" id="btn-mode-standard" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition-all">
+                Standard Analysis
+              </button>
+              <button onclick="switchExplanationMode('beginner')" id="btn-mode-beginner" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all flex items-center space-x-1">
+                <span>Explain Like I'm a Beginner</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Explanation Texts -->
+          <div id="explanation-text-standard" class="mt-4 prose prose-invert max-w-none text-xs md:text-sm text-slate-300 leading-relaxed space-y-3"></div>
+          <div id="explanation-text-beginner" class="mt-4 prose prose-invert max-w-none text-xs md:text-sm text-slate-300 leading-relaxed space-y-3 hidden"></div>
+        </div>
+
+        <!-- Claim-by-Claim Breakdown Section -->
+        <div class="mt-6 glass-panel p-6 rounded-2xl border border-slate-800">
+          <div class="mb-4">
+            <h3 class="text-base font-bold text-white">Claim-by-Claim Breakdown</h3>
+            <p class="text-xs text-slate-400">Individual factual assertions isolated from the submitted story and evaluated independently.</p>
+          </div>
+          <div id="claims-breakdown-list" class="space-y-3"></div>
+        </div>
+
+        <!-- Evidence Corroboration Tables (Supporting & Contradicting) -->
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Supporting Evidence -->
+          <div class="glass-panel p-6 rounded-2xl border border-slate-800">
+            <div class="flex items-center space-x-2 mb-4">
+              <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+              <h4 class="font-bold text-white text-sm">Supporting Evidence</h4>
+              <span id="supporting-count-badge" class="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">0 found</span>
+            </div>
+            <div id="supporting-evidence-list" class="space-y-3">
+              <p class="text-xs text-slate-500">No supporting evidence identified.</p>
+            </div>
+          </div>
+
+          <!-- Contradicting Evidence -->
+          <div class="glass-panel p-6 rounded-2xl border border-slate-800">
+            <div class="flex items-center space-x-2 mb-4">
+              <div class="w-3 h-3 rounded-full bg-red-500"></div>
+              <h4 class="font-bold text-white text-sm">Contradicting / Debunk Evidence</h4>
+              <span id="contradicting-count-badge" class="text-xs font-mono text-red-400 bg-red-500/10 px-2 py-0.5 rounded">0 found</span>
+            </div>
+            <div id="contradicting-evidence-list" class="space-y-3">
+              <p class="text-xs text-slate-500">No contradictory records identified.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Source Credibility & Transparency Panel -->
+        <div class="mt-6 glass-panel p-6 rounded-2xl border border-slate-800">
+          <h3 class="text-base font-bold text-white mb-2">Publisher & Domain Authenticity Assessment</h3>
+          <div id="source-credibility-panel" class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs"></div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 4: MAIN DASHBOARD -->
+      <!-- ============================================================== -->
+      <section id="view-dashboard" class="view-panel hidden p-6 max-w-6xl mx-auto w-full space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-3xl font-extrabold tracking-tight text-white">Live Operations Dashboard</h2>
+            <p class="text-slate-400 text-sm mt-1">Real-time metrics, credibility distributions, and recent verifications from database records.</p>
+          </div>
+          <button onclick="navigateTo('analyzer')" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center space-x-1.5 shadow-lg shadow-blue-500/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>Quick Analyze</span>
+          </button>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass-panel p-5 rounded-2xl border border-slate-800">
+            <span class="text-xs font-mono text-slate-400 uppercase">Total Analyses</span>
+            <h3 id="dash-total" class="text-3xl font-extrabold text-white mt-1">--</h3>
+            <p class="text-[11px] text-blue-400 mt-1">Database-persisted records</p>
+          </div>
+          <div class="glass-panel p-5 rounded-2xl border border-slate-800">
+            <span class="text-xs font-mono text-slate-400 uppercase">Verified Claims</span>
+            <h3 id="dash-verified" class="text-3xl font-extrabold text-emerald-400 mt-1">--</h3>
+            <p class="text-[11px] text-emerald-400/80 mt-1">Supported by evidence</p>
+          </div>
+          <div class="glass-panel p-5 rounded-2xl border border-slate-800">
+            <span class="text-xs font-mono text-slate-400 uppercase">Misleading Claims</span>
+            <h3 id="dash-misleading" class="text-3xl font-extrabold text-amber-400 mt-1">--</h3>
+            <p class="text-[11px] text-amber-400/80 mt-1">Selective omission or half-truths</p>
+          </div>
+          <div class="glass-panel p-5 rounded-2xl border border-slate-800">
+            <span class="text-xs font-mono text-slate-400 uppercase">Contradicted / Debunked</span>
+            <h3 id="dash-contradicted" class="text-3xl font-extrabold text-red-400 mt-1">--</h3>
+            <p class="text-[11px] text-red-400/80 mt-1">Refuted by nodal agencies</p>
+          </div>
+        </div>
+
+        <!-- Charts Grid (Credibility Distribution Donut & Weekly Activity Area) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Credibility Distribution Chart -->
+          <div class="glass-panel p-6 rounded-2xl border border-slate-800">
+            <h3 class="text-sm font-bold text-white mb-1">Credibility Verdict Distribution</h3>
+            <p class="text-xs text-slate-400 mb-4">Proportion of claims across categorized verdicts.</p>
+            <div id="distribution-chart-container" class="flex flex-col sm:flex-row items-center justify-between gap-6">
+              <!-- SVG Donut Chart rendered by JS -->
+              <div id="svg-donut-wrapper" class="w-44 h-44 relative flex items-center justify-center flex-shrink-0"></div>
+              <!-- Legend list -->
+              <div id="distribution-legend" class="space-y-2 text-xs w-full"></div>
+            </div>
+          </div>
+
+          <!-- Weekly Activity Chart -->
+          <div class="glass-panel p-6 rounded-2xl border border-slate-800">
+            <h3 class="text-sm font-bold text-white mb-1">Weekly Verification Activity</h3>
+            <p class="text-xs text-slate-400 mb-4">Daily verification volumes over the preceding 7 days.</p>
+            <div id="weekly-chart-container" class="h-44 w-full flex items-end justify-between pt-4 gap-2"></div>
+          </div>
+        </div>
+
+        <!-- Recent Analyses Table -->
+        <div class="glass-panel p-6 rounded-2xl border border-slate-800">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-bold text-white">Recent Analyses</h3>
+            <button onclick="navigateTo('history')" class="text-xs text-blue-400 hover:text-blue-300 font-medium">View All History →</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="text-slate-400 border-b border-slate-800 uppercase font-mono text-[10px]">
+                <tr>
+                  <th class="pb-3">Story Title / Headline</th>
+                  <th class="pb-3">Verdict</th>
+                  <th class="pb-3">Credibility</th>
+                  <th class="pb-3">Domain</th>
+                  <th class="pb-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="recent-analyses-tbody" class="divide-y divide-slate-800 text-slate-300">
+                <tr><td colspan="5" class="py-4 text-center text-slate-500">Loading recent records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 5: TRUSTED SOURCES DIRECTORY & DOMAIN INSPECTOR -->
+      <!-- ============================================================== -->
+      <section id="view-sources" class="view-panel hidden p-6 max-w-6xl mx-auto w-full space-y-6">
+        <div>
+          <span class="text-xs font-mono text-emerald-400 font-semibold uppercase">Authoritative Verification Engine</span>
+          <h2 class="text-3xl font-extrabold tracking-tight text-white mt-1">Trusted Sources & Domain Verifier</h2>
+          <p class="text-slate-400 text-sm mt-1">Registry of sovereign government bodies, certified fact-checkers, and live domain credibility scanner.</p>
+        </div>
+
+        <!-- Live Domain Inspector Box -->
+        <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-3">
+          <h4 class="font-bold text-white text-sm">Instant Domain Credibility Scanner</h4>
+          <p class="text-xs text-slate-400">Test any domain to inspect its reputation score, official government status, and IFCN certification.</p>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="text" id="domain-scan-input" placeholder="e.g. pib.gov.in, altnews.in, freelaptop-yojana.online" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono">
+            <button onclick="scanDomainReputation()" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center justify-center space-x-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <span>Scan Domain</span>
+            </button>
+          </div>
+          <div id="domain-scan-result" class="hidden p-4 rounded-xl bg-slate-900/80 border border-slate-700 mt-3 text-xs"></div>
+        </div>
+
+        <!-- Directory Filter Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap gap-2">
+            <button onclick="filterSourcesCategory('')" class="source-cat-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white">All Sources</button>
+            <button onclick="filterSourcesCategory('government')" class="source-cat-btn px-3 py-1.5 rounded-lg text-xs font-medium glass-panel text-slate-300 hover:text-white">Government (.gov.in)</button>
+            <button onclick="filterSourcesCategory('fact_checker')" class="source-cat-btn px-3 py-1.5 rounded-lg text-xs font-medium glass-panel text-slate-300 hover:text-white">IFCN Fact Checkers</button>
+            <button onclick="filterSourcesCategory('health_authority')" class="source-cat-btn px-3 py-1.5 rounded-lg text-xs font-medium glass-panel text-slate-300 hover:text-white">Health Authorities</button>
+            <button onclick="filterSourcesCategory('news_agency')" class="source-cat-btn px-3 py-1.5 rounded-lg text-xs font-medium glass-panel text-slate-300 hover:text-white">News Agencies</button>
+          </div>
+          <input type="text" id="sources-search-input" oninput="searchSourcesList(this.value)" placeholder="Search sources..." class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-blue-500">
+        </div>
+
+        <!-- Sources Grid -->
+        <div id="sources-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 6: MISINFORMATION AWARENESS CENTER -->
+      <!-- ============================================================== -->
+      <section id="view-awareness" class="view-panel hidden p-6 max-w-5xl mx-auto w-full space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <span class="text-xs font-mono text-purple-400 font-semibold uppercase">Digital Media Hygiene</span>
+            <h2 class="text-3xl font-extrabold tracking-tight text-white mt-1">Misinformation Awareness Center</h2>
+            <p class="text-slate-400 text-sm mt-1">Learn to spot deepfakes, manipulated photos, and viral hoax forwards. Take interactive quizzes to boost your awareness score.</p>
+          </div>
+
+          <!-- User's Digital Media Awareness Score Badge -->
+          <div class="glass-panel p-4 rounded-xl border border-purple-500/30 flex items-center space-x-3 flex-shrink-0">
+            <div class="w-10 h-10 rounded-full bg-purple-500/20 text-purple-300 font-extrabold flex items-center justify-center text-sm border border-purple-500/40">
+              <span id="user-awareness-score-badge">0</span>
+            </div>
+            <div>
+              <p class="text-[10px] font-mono uppercase text-slate-400">Your Literacy Score</p>
+              <p class="text-xs font-semibold text-purple-300">Distinct from credibility score</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modules List View -->
+        <div id="awareness-modules-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+        <!-- Interactive Quiz Modal / View -->
+        <div id="awareness-quiz-panel" class="glass-panel p-6 rounded-2xl border border-purple-500/40 hidden space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div>
+              <span class="text-[10px] font-mono text-purple-400 font-semibold uppercase">Interactive Literacy Test</span>
+              <h3 id="quiz-title-header" class="text-lg font-bold text-white">Module Quiz</h3>
+            </div>
+            <button onclick="closeQuizView()" class="text-slate-400 hover:text-white text-xs">Back to Modules</button>
+          </div>
+
+          <!-- Module Reading Summary -->
+          <div id="quiz-module-content" class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 leading-relaxed max-h-60 overflow-y-auto"></div>
+
+          <!-- Question Items Container -->
+          <div id="quiz-questions-list" class="space-y-4"></div>
+
+          <div class="flex justify-end pt-2">
+            <button id="submit-quiz-btn" onclick="submitCurrentQuiz()" class="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs shadow-lg shadow-purple-500/20">
+              Submit Quiz Answers
+            </button>
+          </div>
+
+          <!-- Quiz Feedback Result Box -->
+          <div id="quiz-result-feedback" class="mt-4 p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs hidden space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 7: HISTORY & SAVED REPORTS -->
+      <!-- ============================================================== -->
+      <section id="view-history" class="view-panel hidden p-6 max-w-5xl mx-auto w-full space-y-6">
+        <div>
+          <h2 class="text-3xl font-extrabold tracking-tight text-white">Analysis History & Saved Reports</h2>
+          <p class="text-slate-400 text-sm mt-1">Review past evaluations, filter by verdict, and manage bookmarked analyses.</p>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input type="text" id="history-search-input" oninput="loadHistory()" placeholder="Search past claims or headlines..." class="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+          <select id="history-verdict-filter" onchange="loadHistory()" class="px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+            <option value="">All Verdicts</option>
+            <option value="Supported">Supported by evidence</option>
+            <option value="Misleading">Misleading</option>
+            <option value="Contradicted">Contradicted by evidence</option>
+            <option value="Unverified">Unverified</option>
+          </select>
+          <button id="history-saved-toggle" onclick="toggleSavedFilter()" class="px-4 py-2.5 rounded-xl glass-panel text-xs text-slate-300 font-medium hover:text-white transition-colors">
+            ★ Saved Only: OFF
+          </button>
+        </div>
+
+        <!-- History Records Table -->
+        <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="text-slate-400 bg-slate-900/60 border-b border-slate-800 font-mono text-[10px] uppercase">
+                <tr>
+                  <th class="p-4">Date</th>
+                  <th class="p-4">Story Headline</th>
+                  <th class="p-4">Verdict</th>
+                  <th class="p-4">Credibility</th>
+                  <th class="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-tbody" class="divide-y divide-slate-800 text-slate-300">
+                <tr><td colspan="5" class="p-6 text-center text-slate-500">Loading history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 8: ADMIN GOVERNANCE PANEL (RBAC) -->
+      <!-- ============================================================== -->
+      <section id="view-admin" class="view-panel hidden p-6 max-w-6xl mx-auto w-full space-y-6">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div>
+            <span class="text-xs font-mono text-amber-400 font-semibold uppercase">Platform Governance</span>
+            <h2 class="text-3xl font-extrabold tracking-tight text-white mt-1">Administrator Control Panel</h2>
+            <p class="text-slate-400 text-sm mt-1">Role-Based Access Control for user management, source registry, and system monitoring.</p>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            Role: Admin Authorized
+          </span>
+        </div>
+
+        <!-- Admin Metrics Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="glass-panel p-4 rounded-xl border border-slate-800">
+            <span class="text-xs font-mono text-slate-400 uppercase">Registered Users</span>
+            <h4 id="admin-metric-users" class="text-2xl font-bold text-white mt-1">--</h4>
+          </div>
+          <div class="glass-panel p-4 rounded-xl border border-slate-800">
+            <span class="text-xs font-mono text-slate-400 uppercase">Total Analyses</span>
+            <h4 id="admin-metric-analyses" class="text-2xl font-bold text-blue-400 mt-1">--</h4>
+          </div>
+          <div class="glass-panel p-4 rounded-xl border border-slate-800">
+            <span class="text-xs font-mono text-slate-400 uppercase">Misinfo Flagged</span>
+            <h4 id="admin-metric-misinfo" class="text-2xl font-bold text-red-400 mt-1">--</h4>
+          </div>
+          <div class="glass-panel p-4 rounded-xl border border-slate-800">
+            <span class="text-xs font-mono text-slate-400 uppercase">System Cache Rate</span>
+            <h4 id="admin-metric-cache" class="text-2xl font-bold text-emerald-400 mt-1">94.2%</h4>
+          </div>
+        </div>
+
+        <!-- Source Registry Management CRUD -->
+        <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-bold text-white">Authoritative Source Registry</h3>
+            <button onclick="openAddSourceModal()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center space-x-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              <span>Add Trusted Source</span>
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="text-slate-400 border-b border-slate-800 font-mono text-[10px] uppercase">
+                <tr>
+                  <th class="pb-2">Name</th>
+                  <th class="pb-2">Domain</th>
+                  <th class="pb-2">Category</th>
+                  <th class="pb-2">Trust Score</th>
+                  <th class="pb-2">IFCN</th>
+                  <th class="pb-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-sources-tbody" class="divide-y divide-slate-800 text-slate-300"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- User Management Table -->
+        <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+          <h3 class="text-base font-bold text-white">User Accounts & Roles</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="text-slate-400 border-b border-slate-800 font-mono text-[10px] uppercase">
+                <tr>
+                  <th class="pb-2">Full Name</th>
+                  <th class="pb-2">Email</th>
+                  <th class="pb-2">Role</th>
+                  <th class="pb-2">Awareness Score</th>
+                  <th class="pb-2">Status</th>
+                  <th class="pb-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-tbody" class="divide-y divide-slate-800 text-slate-300"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: USER AUTHENTICATION (SIGN IN / REGISTER) -->
+  <!-- ============================================================== -->
+  <div id="auth-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel p-6 rounded-2xl border border-slate-800 max-w-md w-full relative">
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="text-center mb-6">
+        <h3 id="auth-modal-title" class="text-xl font-bold text-white">Sign In to TruthGuard AI</h3>
+        <p id="auth-modal-subtitle" class="text-xs text-slate-400 mt-1">Access your analysis history and awareness certifications.</p>
+      </div>
+
+      <!-- Quick 1-Click Demo Buttons inside Modal -->
+      <div class="mb-5 p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
+        <span class="text-[10px] font-mono text-slate-400 uppercase block mb-2">1-Click Instant Evaluator Sign-In:</span>
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="demoSignIn('admin')" class="py-1.5 px-2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold hover:bg-amber-500/30">Admin</button>
+          <button onclick="demoSignIn('analyst')" class="py-1.5 px-2 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-semibold hover:bg-blue-500/30">Analyst</button>
+          <button onclick="demoSignIn('user')" class="py-1.5 px-2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold hover:bg-emerald-500/30">Citizen</button>
+        </div>
+      </div>
+
+      <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+        <div id="auth-name-container" class="hidden">
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name</label>
+          <input type="text" id="auth-name" placeholder="Aarav Sharma" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-100 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
+          <input type="email" id="auth-email" required placeholder="name@domain.com" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-100 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Password</label>
+          <input type="password" id="auth-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-100 focus:outline-none focus:border-blue-500">
+        </div>
+        <div id="auth-admin-secret-container" class="hidden">
+          <label class="block text-xs font-semibold text-amber-300 mb-1">Admin Secret Key (Required for Admin Role)</label>
+          <input type="password" id="auth-admin-secret" placeholder="truthguard-admin-secret-key" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-amber-500/40 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
+        </div>
+
+        <button type="submit" id="auth-submit-btn" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors shadow-lg shadow-blue-500/20">
+          Sign In
+        </button>
+      </form>
+
+      <div class="mt-4 text-center">
+        <button onclick="toggleAuthMode()" id="auth-toggle-mode-btn" class="text-xs text-slate-400 hover:text-blue-400">
+          Need an account? Register here
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: ADD TRUSTED SOURCE (ADMIN) -->
+  <!-- ============================================================== -->
+  <div id="add-source-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel p-6 rounded-2xl border border-slate-800 max-w-md w-full relative">
+      <button onclick="closeAddSourceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <h3 class="text-lg font-bold text-white mb-4">Add Trusted Source to Registry</h3>
+
+      <form onsubmit="handleCreateSourceSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Source Name *</label>
+          <input type="text" id="new-source-name" required placeholder="e.g. Press Trust of India (PTI)" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Domain *</label>
+          <input type="text" id="new-source-domain" required placeholder="e.g. ptinews.com" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 focus:outline-none focus:border-blue-500 font-mono">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Category</label>
+          <select id="new-source-category" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 focus:outline-none focus:border-blue-500">
+            <option value="government">Government</option>
+            <option value="fact_checker">IFCN Fact Checker</option>
+            <option value="health_authority">Health Authority</option>
+            <option value="news_agency">News Agency</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Credibility Rating (0 - 100)</label>
+          <input type="number" id="new-source-rating" min="0" max="100" value="92.0" step="0.5" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 focus:outline-none focus:border-blue-500">
+        </div>
+        <div class="flex items-center space-x-2 pt-1">
+          <input type="checkbox" id="new-source-ifcn" class="rounded bg-slate-900 border-slate-700 text-blue-600 focus:ring-0">
+          <label for="new-source-ifcn" class="text-slate-300 font-medium">IFCN Certified Signatory</label>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Description</label>
+          <textarea id="new-source-desc" rows="2" placeholder="Brief description of editorial standards" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 focus:outline-none focus:border-blue-500"></textarea>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs mt-2 transition-colors">
+          Add Source to Database
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: SHARE REPORT -->
+  <!-- ============================================================== -->
+  <div id="share-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel p-6 rounded-2xl border border-slate-800 max-w-md w-full relative">
+      <button onclick="closeShareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <h3 class="text-lg font-bold text-white mb-2">Share Credibility Report</h3>
+      <p class="text-xs text-slate-400 mb-4">Anyone with this link can view this evidence assessment without logging in.</p>
+
+      <div class="flex items-center space-x-2">
+        <input type="text" id="share-link-input" readonly class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-blue-300 font-mono focus:outline-none">
+        <button onclick="copyShareLink()" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs">
+          Copy
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Menu -->
+  <div id="mobile-menu" class="fixed inset-0 bg-slate-950/95 z-50 p-6 flex flex-col justify-between hidden md:hidden">
+    <div>
+      <div class="flex items-center justify-between pb-6 border-b border-slate-800">
+        <span class="font-bold text-lg text-white">TruthGuard AI Menu</span>
+        <button onclick="toggleMobileMenu()" class="text-slate-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <nav class="space-y-3 pt-6 text-sm">
+        <button onclick="navigateTo('landing'); toggleMobileMenu();" class="block w-full text-left text-slate-200 py-2">Home</button>
+        <button onclick="navigateTo('analyzer'); toggleMobileMenu();" class="block w-full text-left text-blue-400 font-semibold py-2">AI News Analyzer</button>
+        <button onclick="navigateTo('dashboard'); toggleMobileMenu();" class="block w-full text-left text-slate-200 py-2">Dashboard</button>
+        <button onclick="navigateTo('sources'); toggleMobileMenu();" class="block w-full text-left text-slate-200 py-2">Trusted Sources</button>
+        <button onclick="navigateTo('awareness'); toggleMobileMenu();" class="block w-full text-left text-slate-200 py-2">Awareness Center</button>
+        <button onclick="navigateTo('history'); toggleMobileMenu();" class="block w-full text-left text-slate-200 py-2">History & Saved</button>
+      </nav>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
